@@ -18,34 +18,13 @@ pred(){
 }
 
 
-xinyadu_glove(){
-	TRAIN_SENTENCE='data/squad/processed/xinyadu_processed/train_sentence.npy'
-	TRAIN_QUESTION='data/squad/processed/xinyadu_processed/train_question.npy'
-	TRAIN_LENGTH_S='data/squad/processed/xinyadu_processed/train_length_sentence.npy'
-	TRAIN_LENGTH_Q='data/squad/processed/xinyadu_processed/train_length_question.npy'
-	DEV_SENTENCE='data/squad/processed/xinyadu_processed/dev_sentence.npy'
-	DEV_QUESTION='data/squad/processed/xinyadu_processed/dev_question.npy'
-	DEV_LENGTH_S='data/squad/processed/xinyadu_processed/dev_length_sentence.npy'
-	DEV_LENGTH_Q='data/squad/processed/xinyadu_processed/dev_length_question.npy'
-	TEST_SENTENCE='data/squad/processed/xinyadu_processed/test_sentence.npy'
-	TEST_LENGTH_S='data/squad/processed/xinyadu_processed/test_length_sentence.npy'
-	PRED_DIR='result/xinyadu_glove.txt'
-	PARAMS=basic_params
-}
-
 squad(){
-	TRAIN_SENTENCE='../qa_generation/data/squad/processed/qa_from_s/train_sentence.npy'
-	TRAIN_QUESTION='../qa_generation/data/squad/processed/qa_from_s/train_question.npy'
-	TRAIN_LENGTH_S='../qa_generation/data/squad/processed/qa_from_s/train_length_sentence.npy'
-	TRAIN_LENGTH_Q='../qa_generation/data/squad/processed/qa_from_s/train_length_question.npy'
-	DEV_SENTENCE='../qa_generation/data/squad/processed/qa_from_s/dev_sentence.npy'
-	DEV_QUESTION='../qa_generation/data/squad/processed/qa_from_s/dev_question.npy'
-	DEV_LENGTH_S='../qa_generation/data/squad/processed/qa_from_s/dev_length_sentence.npy'
-	DEV_LENGTH_Q='../qa_generation/data/squad/processed/qa_from_s/dev_length_question.npy'
-	TEST_SENTENCE='../qa_generation/data/squad/processed/qa_from_s/dev_sentence.npy'
-	TEST_LENGTH_S='../qa_generation/data/squad/processed/qa_from_s/dev_length_sentence.npy'
-	DIC_DIR='../qa_generation/data/squad/processed/qa_from_s/vocab_qa_from_s.dic'
-	PRED_DIR='result/squad.txt'
+	TRAIN_SENTENCE='data/processed/train_sentence.npy'
+	TRAIN_QUESTION='data/processed/train_question.npy'
+	DEV_SENTENCE='data/processed/dev_sentence.npy'
+	DEV_QUESTION='data/processed/dev_question.npy'
+	TEST_SENTENCE='data/processed/test_sentence.npy'
+	PRED_DIR='result/pred.txt'
 	PARAMS=basic_params
 }
 
@@ -56,7 +35,6 @@ squad(){
 $1
 $2
 
-TRAIN_STEPS=200000
 NUM_EPOCHS=5
 MODEL_DIR=./store_model/$3
 

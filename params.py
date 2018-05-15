@@ -5,19 +5,19 @@ def basic_params():
     return tf.contrib.training.HParams(
 
         # File path
-        pre_embedding = '../qa_generation/data/squad/processed/qa_from_s/glove840b_qafroms_vocab300.npy',
+        pre_embedding = 'data/processed/glove_embedding.npy', # None or path to pretrained embedding
         
         # NN params
         voca_size = 34004,
         embedding_size = 300,
         embedding_trainable = False,
         hidden_size = 512,
-        cell_type = 'lstm',
-        enc_type = 'bi',
+        cell_type = 'lstm', # 'lstm' or 'gru'
+        enc_type = 'bi', # 'bi' or 'mono'
         encoder_layer = 1,
         decoder_layer = 2,
         dropout = 0.4,
-        attn = 'normed_bahdanau',
+        attn = 'normed_bahdanau',  # 'bahdanau', 'normed_bahdanau', 'luong', 'scaled_luong'
        
         # Extra params
         dtype = tf.float32,
