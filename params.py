@@ -3,30 +3,36 @@ import tensorflow as tf
 def basic_params():
     '''A set of basic hyperparameters'''
     return tf.contrib.training.HParams(
-        dtype = tf.float32,
+
+        # File path
+        pre_embedding = '../qa_generation/data/squad/processed/qa_from_s/glove840b_qafroms_vocab300.npy',
+        
+        # NN params
         voca_size = 34004,
-        embedding = 'data/squad/processed/xinyadu_processed/glove840b_xinyadu_vocab300.npy',
+        embedding_size = 300,
         embedding_trainable = False,
         hidden_size = 512,
+        cell_type = 'lstm',
+        enc_type = 'bi',
         encoder_layer = 1,
         decoder_layer = 2,
-        
+        dropout = 0.4,
+        attn = 'normed_bahdanau',
+       
+        # Extra params
+        dtype = tf.float32,
         maxlen_s = 60,
-        maxlen_q_train = 32,
-        maxlen_q_dev = 27,
-
-        rnn_dropout = 0.4,
-
+        maxlen_dec_train = 32,
+        maxlen_dec_dev = 27,
         start_token = 1, # <GO> index
         end_token = 2, # <EOS> index
 
-        attn = 'normed_bahdanau',
-
-        # learning parameters
-        batch_size = 32,
+        # Learning params
+        batch_size = 64,
         learning_rate = 0.001,
         decay_step = None,
-        decay_rate = 0.5
+        decay_rate = 0.5,
+        sample_prob = 0.25,
         )
     
 def other_params():

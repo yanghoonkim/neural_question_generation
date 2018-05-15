@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 import params
-import model as model
+import model
 
 FLAGS = None
 
@@ -16,9 +16,9 @@ def remove_eos(sentence, eos = '<EOS>', pad = '<PAD>'):
     else:
         return sentence + '\n'
 
-def write_result(predict_results):
+def write_result(predict_results, dic_dir):
     print 'Load dic file...'
-    with open('data/squad/processed/xinyadu_processed/vocab_xinyadu.dic') as dic:
+    with open(dic_dir) as dic:
         dic_file = pkl.load(dic)
     reversed_dic = dict((y,x) for x,y in dic_file.iteritems())
     
@@ -30,24 +30,10 @@ def write_result(predict_results):
                 indices = [reversed_dic[index] for index in output['question']]
                 sentence = ' '.join(indices)
                 sentence = remove_eos(sentence)
-                f.write(sentence)
+                f.write(sentence.encode('utf-8'))
 
             except StopIteration:
                 break
-
-def print_result(predict_results):
-    with open('data/squad/processed/xinyadu_processed/vocab_xinyadu.dic') as dic:
-        dic_file = pkl.load(dic)
-    reversed_dic = pkl.load(dic)
-
-    while True:
-        try:
-            output = predict_results.next()
-            indices = [reversed_dic[index] for index in output['question']]
-            sentence = ' '.join(indices)
-            print sentence
-        except StopIteration:
-            break
     
 def main(unused):
     
@@ -64,41 +50,34 @@ def main(unused):
     model_params = getattr(params, FLAGS.params)().values()
 
     # Define estimator
-    nn = tf.estimator.Estimator(model_fn=model.q_generation, config = config, params=model_params)
+    q_generation = model.q_generation(model_params)
+    nn = tf.estimator.Estimator(model_fn=q_generation.run, config = config, params=model_params)
     
     # Load training data
     train_sentence = np.load(FLAGS.train_sentence) # train_data
     train_question = np.load(FLAGS.train_question) # train_label
-    train_sentence_length = np.load(FLAGS.train_sentence_length)
-    train_question_length = np.load(FLAGS.train_question_length)
 
     # Data shuffling for training data
     permutation = np.random.permutation(len(train_sentence))
     train_sentence = train_sentence[permutation]
     train_question = train_question[permutation]
-    train_sentence_length = train_sentence_length[permutation]
-    train_question_length = train_question_length[permutation]
     
     # Training input function for estimator
     train_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x={"s": train_sentence, 'q': train_question,
-            'len_s': train_sentence_length, 'len_q': train_question_length},
-        y=train_sentence, # useless value
+        x={'enc_inputs': train_sentence, 'dec_inputs': train_question},
+        y=None, # useless value
         batch_size = model_params['batch_size'],
         num_epochs=FLAGS.num_epochs,
         shuffle=True)
     
+
     # Load evaluation data
     eval_sentence = np.load(FLAGS.eval_sentence)
     eval_question = np.load(FLAGS.eval_question)
-    eval_sentence_length = np.load(FLAGS.eval_sentence_length)
-    eval_question_length = np.load(FLAGS.eval_question_length)
-
 
     # Evaluation input function for estimator
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x = {"s": eval_sentence, 'q': eval_question,
-            'len_s': eval_sentence_length, 'len_q': eval_question_length},
+        x = {'enc_inputs': eval_sentence, 'dec_inputs': eval_question},
         y = None,
         batch_size = model_params['batch_size'],
         num_epochs=1,
@@ -122,11 +101,10 @@ def main(unused):
     else: # 'pred'
         # Load test data
         test_sentence = np.load(FLAGS.test_sentence)
-        test_sentence_length = np.load(FLAGS.test_sentence_length)
 
         # prediction input function for estimator
         pred_input_fn = tf.estimator.inputs.numpy_input_fn(
-                x = {"s" : test_sentence, 'len_s': test_sentence_length},
+                x = {'enc_inputs' : test_sentence},
                 y = None,
                 batch_size = model_params['batch_size'],
                 num_epochs = 1,
@@ -134,9 +112,9 @@ def main(unused):
 
         # prediction
         predict_results = nn.predict(input_fn = pred_input_fn)
+
         # write result(question) into file
-        write_result(predict_results)
-        #print_result(predict_results)
+        write_result(predict_results, FLAGS.dic_dir)
 
     
 if __name__ == '__main__':
@@ -144,18 +122,16 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type = str, help = 'train, eval')
     parser.add_argument('--train_sentence', type = str, default= '', help = 'path to the training sentence.')
     parser.add_argument('--train_question', type = str, default = '', help = 'path to the training question.')
-    parser.add_argument('--train_sentence_length', type = str, default = '')
-    parser.add_argument('--train_question_length', type = str, default = '')
+
     parser.add_argument('--eval_sentence', type = str, default = '', help = 'path to the evaluation sentence. ')
     parser.add_argument('--eval_question', type = str, default = '', help = 'path to the evaluation question.')
-    parser.add_argument('--eval_sentence_length', type = str, default = '')
-    parser.add_argument('--eval_question_length', type = str, default = '')
+
     parser.add_argument('--test_sentence', type = str, default = '', help = 'path to the test sentence.')
-    parser.add_argument('--test_sentence_length', type = str, default = '')
+    
+    parser.add_argument('--dic_dir', type = str, help = 'path to the dictionary')
     parser.add_argument('--model_dir', type = str, help = 'path to save the model')
     parser.add_argument('--pred_dir', type = str, help = 'path to save the predictions')
     parser.add_argument('--params', type = str, help = 'parameter setting')
-    parser.add_argument('--steps', type = int, default = 200000, help = 'training step size')
     parser.add_argument('--num_epochs', type = int, default = 10, help = 'training epoch size')
     FLAGS = parser.parse_args()
 

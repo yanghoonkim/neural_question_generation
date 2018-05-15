@@ -44,6 +44,7 @@ squad(){
 	DEV_LENGTH_Q='../qa_generation/data/squad/processed/qa_from_s/dev_length_question.npy'
 	TEST_SENTENCE='../qa_generation/data/squad/processed/qa_from_s/dev_sentence.npy'
 	TEST_LENGTH_S='../qa_generation/data/squad/processed/qa_from_s/dev_length_sentence.npy'
+	DIC_DIR='../qa_generation/data/squad/processed/qa_from_s/vocab_qa_from_s.dic'
 	PRED_DIR='result/squad.txt'
 	PARAMS=basic_params
 }
@@ -56,21 +57,17 @@ $1
 $2
 
 TRAIN_STEPS=200000
-NUM_EPOCHS=10
+NUM_EPOCHS=5
 MODEL_DIR=./store_model/$3
 
 python main.py \
 	--mode=$MODE \
 	--train_sentence=$TRAIN_SENTENCE \
 	--train_question=$TRAIN_QUESTION \
-	--train_sentence_length=$TRAIN_LENGTH_S \
-	--train_question_length=$TRAIN_LENGTH_Q \
 	--eval_sentence=$DEV_SENTENCE \
 	--eval_question=$DEV_QUESTION \
-	--eval_sentence_length=$DEV_LENGTH_S \
-	--eval_question_length=$DEV_LENGTH_Q \
 	--test_sentence=$TEST_SENTENCE \
-	--test_sentence_length=$TEST_LENGTH_S \
+	--dic_dir=$DIC_DIR \
 	--model_dir=$MODEL_DIR \
 	--pred_dir=$PRED_DIR \
 	--params=$PARAMS \
