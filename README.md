@@ -30,7 +30,10 @@ processed data provided by [Xinya Du et al.](https://arxiv.org/pdf/1705.00106.pd
 
 1. Data preprocessing
 
-`python process_data.py`
+```
+mkdir data/processed
+python process_data.py
+```
 
 2. Download & process GloVe
 

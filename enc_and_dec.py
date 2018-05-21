@@ -62,11 +62,26 @@ class Encoder(_BaseClass):
 		    dtype = self.dtype)
 
 	    self.encoder_output = tf.concat(encoder_output, -1)
-	    if type(encoder_state[0]) is not tuple:
-                # if num_layer == 1
-                self.encoder_state = tf.concat(encoder_state, -1)
-	    else:
-                self.encoder_state = tuple(tf.concat([state_fw, state_bw], -1) for state_fw, state_bw in zip(encoder_state[0], encoder_state[1]))
+	    if self.cell_type is 'gru':
+                if self.num_layer == 1:
+                    self.encoder_state = tf.concat(encoder_state, -1)
+	        else: # multi layer
+                    self.encoder_state = tuple(tf.concat([state_fw, state_bw], -1) for state_fw, state_bw in zip(encoder_state[0], encoder_state[1]))
+
+            else: # lstm
+                if self.num_layer == 1:
+                    encoder_state_c = tf.concat([encoder_state[0].c, encoder_state[1].c], axis = 1)
+                    encoder_state_h = tf.concat([encoder_state[0].h, encoder_state[1].h], axis = 1)
+                    self.encoder_state = tf.contrib.rnn.LSTMStateTuple(c = encoder_state_c, h = encoder_state_h)
+                else: # multi layer
+                    _encoder_state = list()
+                    for state_fw, state_bw in zip(encoder_state[0], encoder_state[1]):
+                        partial_state_c = tf.concat([state_fw.c, state_bw.c], axis = 1)
+                        partial_state_h = tf.concat([state_fw.h, state_bw.h], axis = 1)
+                        partial_state = tf.contrib.rnn.LSTMStateTuple(c = partial_state_c, h = partial_state_h)
+                        _encoder_state.append(partial_state)
+                    self.encoder_state = tuple(_encoder_state)
+
 		
 	else:
 	    raise ValueError('Invalid input %s' %self.enc_type)

@@ -61,7 +61,7 @@ class q_generation:
 	with tf.variable_scope('DecoderScope'):
 	    decoder = enc_and_dec.Decoder(self.enc_type, 
                     self.attn, self.voca_size,
-		    self.dec_layer, self.hidden_size,
+		    self.dec_layer, self.hidden_size * 2 * (self.enc_type == 'bi'),
                     self.cell_type, self.rnn_dropout,
 		    self.dtype, mode, self.sample_prob)
 
