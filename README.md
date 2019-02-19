@@ -1,4 +1,4 @@
-# neural question_generation
+# neural_question_generation
 Implemenration of &lt;Learning to Ask: Neural Question Generation for Reading Comprehension> by Xinya Du et al.
 
 **The source code still needs to be modified**
