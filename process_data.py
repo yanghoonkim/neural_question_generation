@@ -70,10 +70,10 @@ with open(TEST_TGT) as f:
     question_test = [line.split() for line in f.readlines()] 
     
 maxlen = max([len(sentence) for sentence in sentence_test])
-print 'dev sentences max length : %d '%maxlen
+print 'test sentences max length : %d '%maxlen
 
 maxlen = max([len(sentence) for sentence in question_test])
-print 'dev questions max length : %d \n'%maxlen
+print 'test questions max length : %d \n'%maxlen
 
 # <<< Read data and Check max-length
 
