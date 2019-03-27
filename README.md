@@ -46,18 +46,19 @@ python process_embedding.py # This will take a couple of minutes
 3. Train model
 
 ```
-# data_name : dataset name in run.sh
-# model_name : the name of weight set, you can train multiple models with the same parameters by taking different model name 
-bash run.sh [data_name] train [model_name]
-# example : bash run.sh squad train model_0
+# data_name : dataset name which is defined in run.sh
+# hyperparameters : hyperparameters setting which is defined in params.py
+# epochs: training epochs
+
+bash run.sh train [data_name] [hyperparameters] [epochs]
+# example : bash run.sh trian squad basic_params 10
 ```
 
 4. Test model
 
 ```
-mkdir result # only for the first time
-bash run.sh [data_name] pred [model_name]
-# example : bash run.sh squad pred model_0
-# the result will be saved in the result folder
+mkdir result # only for the first time, predicted result will be saved here
+bash run.sh pred [data_name] [hyperparameters] 0 
+# example : bash run.sh pred squad basic_params 0 
 ```
 

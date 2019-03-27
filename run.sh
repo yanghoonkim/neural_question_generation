@@ -25,18 +25,19 @@ squad(){
 	DEV_QUESTION='data/processed/dev_question.npy'
 	TEST_SENTENCE='data/processed/test_sentence.npy'
 	PRED_DIR='result/pred.txt'
-	PARAMS=basic_params
 }
 
 
-# Pass the first argument as the name of dataset
-# Pass the second argument as mode
-# Pass the third argument to control GPU usage
+# Pass the first argument as mode
+# Pass the second argument as the name of dataset
+# Pass the third argument as the hyperparameter setting
+# Pass the fourth argument as training epochs
 $1
 $2
 
-NUM_EPOCHS=5
-MODEL_DIR=./store_model/$3
+PARAMS=$3
+MODEL_DIR=./store_model/$PARAMS
+NUM_EPOCHS=$4
 
 python main.py \
 	--mode=$MODE \

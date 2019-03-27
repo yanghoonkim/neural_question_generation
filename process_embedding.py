@@ -1,26 +1,33 @@
 import numpy as np
 import pickle as pkl
+import os
 
 # Load & process GloVe
 data_dir = 'data/'
 glove = 'glove.840B.300d'
 
-print 'Reading Glove...'
-f = open(data_dir + glove + '.txt')
-lines = f.readlines()
-f.close()
+if not os.path.exists(data_dir + 'processed/' + glove + '.dic.npy'):
+    print 'Reading original Glove file...'
+    f = open(data_dir + glove + '.txt')
+    lines = f.readlines()
+    f.close()
 
-print 'Processing Glove...\n'
-embedding = dict()
-for line in lines:
-    splited = line.split()
-    embedding[splited[0]] = map(float, splited[1:])
+    print 'Processing original Glove file to dictionary...\n'
+    embedding = dict()
+    for line in lines:
+        splited = line.split()
+        embedding[splited[0]] = map(float, splited[1:])
 
-# Save glove as dic file
-np.save(data_dir + 'processed/' + glove + '.dic', embedding)
+    # Save Glove as dic file
+    np.save(data_dir + 'processed/' + glove + '.dic.npy', embedding)
 
+else:
+    print 'Glove dictionary exists!'
+    print 'Loading Glove dictionary...\n'
+    embedding = np.load(data_dir + 'processed/' + glove + '.dic.npy').item()
 
 # Make pre-trianed embedding with GloVe
+print 'Generate pre-trained embedding with Glove'
 with open('data/processed/vocab_xinyadu.dic') as f:
     vocab = pkl.load(f)
     
