@@ -25,6 +25,7 @@ squad(){
 	DEV_QUESTION='data/processed/dev_question.npy'
 	TEST_SENTENCE='data/processed/test_sentence.npy'
 	PRED_DIR='result/pred.txt'
+	DIC_DIR='data/processed/vocab_xinyadu.dic'
 }
 
 

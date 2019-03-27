@@ -18,6 +18,8 @@ def basic_params():
         decoder_layer = 2,
         dropout = 0.4,
         attn = 'normed_bahdanau',  # 'bahdanau', 'normed_bahdanau', 'luong', 'scaled_luong'
+        beam_width = 5,
+        length_penalty_weight = 2.1,
        
         # Extra params
         dtype = tf.float32,

@@ -26,6 +26,8 @@ class q_generation:
 	self.maxlen_dec_dev = params['maxlen_dec_dev'] # for loss calculation
 	self.rnn_dropout = params['dropout']
 	self.attn = params['attn']
+        self.beam_width = params['beam_width']
+        self.length_penalty_weight = params['length_penalty_weight']
 	self.sample_prob = params['sample_prob']
 	self.learning_rate = params['learning_rate']
 	self.decay_step = params['decay_step'] # learning rate decay
@@ -61,16 +63,20 @@ class q_generation:
 	with tf.variable_scope('DecoderScope'):
 	    decoder = enc_and_dec.Decoder(self.enc_type, 
                     self.attn, self.voca_size,
+                    self.beam_width, self.length_penalty_weight,
 		    self.dec_layer, self.hidden_size * 2 * (self.enc_type == 'bi'),
                     self.cell_type, self.rnn_dropout,
 		    self.dtype, mode, self.sample_prob)
 
 	    # Add attention wrapper to decoder cell
-	    decoder.set_attentional_cell(encoder_outputs, self.enc_input_length, encoder_state, self.enc_layer)
-
-	self.logits = decoder.run(self.embd_dec_inputs, self.dec_input_length, self.dec_embedding, self.GO, self.EOS)
-	self.predictions = tf.argmax(self.logits, axis = -1)
-        #self.predictions = tf.Print(self.predictions, [self.predictions], message = '------********thisisit*****8--------')
+	    decoder.set_attention_cell(encoder_outputs, self.enc_input_length, encoder_state, self.enc_layer)
+        
+        if not (mode == tf.estimator.ModeKeys.PREDICT and self.beam_width > 0):
+	    self.logits = decoder.run(self.embd_dec_inputs, self.dec_input_length, self.dec_embedding, self.GO, self.EOS)
+	    self.predictions = tf.argmax(self.logits, axis = -1)
+        
+        else: # Beam decoding
+            self.predictions = decoder.run(self.embd_dec_inputs, self.dec_input_length, self.dec_embedding, self.GO, self.EOS)
 
 	self._calculate_loss(mode)
 	return self._update_or_output(mode)

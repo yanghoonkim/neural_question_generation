@@ -92,6 +92,7 @@ class Encoder(_BaseClass):
 class Decoder(_BaseClass):
     def __init__(self, enc_type ='bi', 
             attn_type = 'bahdanau', voca_size = None,
+            beam_width = 0, length_penalty_weight = 1,
 	    num_layer = 1, hidden_size = 512, 
             cell_type = 'lstm', dropout = 0.1, 
             dtype = tf.float32, mode = tf.estimator.ModeKeys.TRAIN,
@@ -107,6 +108,8 @@ class Decoder(_BaseClass):
 		)
 	self.enc_type = enc_type
 	self.attn_type = attn_type
+        self.beam_width = beam_width
+        self.length_penalty_weight = length_penalty_weight
 	self.voca_size = voca_size
 	self.sample_prob = sample_prob
 
@@ -129,26 +132,56 @@ class Decoder(_BaseClass):
                     embedding, start_token, end_token
                     )
 
-        # Start decoding
-        initial_state = self.out_dec_cell.zero_state(dtype = self.dtype, batch_size = self.batch_size)
-        decoder = tf.contrib.seq2seq.BasicDecoder(
-        	self.out_dec_cell, helper, initial_state,
-        	output_layer = None)
+        # Decoder initial state setting
+        if (self.mode != tf.estimator.ModeKeys.PREDICT or self.beam_width == 0):
+            initial_state = self.out_dec_cell.zero_state(dtype = self.dtype, batch_size = self.batch_size)
+
+            decoder = tf.contrib.seq2seq.BasicDecoder(
+                    self.out_dec_cell, helper, initial_state,
+        	    output_layer = None)
+        else:
+            initial_state = self.out_dec_cell.zero_state(dtype = self.dtype, batch_size = self.batch_size * self.beam_width)
+            print type(self.length_penalty_weight)
+            print '----------------------------------'
+            decoder = tf.contrib.seq2seq.BeamSearchDecoder(
+                    cell = self.out_dec_cell,
+                    embedding = embedding,
+                    start_tokens = start_token,
+                    end_token = end_token,
+                    initial_state = initial_state,
+                    beam_width = self.beam_width,
+                    length_penalty_weight = self.length_penalty_weight)
+
 
         if self.mode == tf.estimator.ModeKeys.TRAIN:
-            outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, impute_finished=True, maximum_iterations = None)
-        else: # Test & Eval
+            outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, impute_finished = True, maximum_iterations = None)
+            return outputs.rnn_output
+            
+        # Test with Beam decoding
+        elif (self.mode == tf.estimator.ModeKeys.PREDICT and self.beam_width > 0):
+            outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, impute_finished = False, maximum_iterations = self.max_iter)
+            predictions = outputs.predicted_ids # [batch, length, beam_width]
+            predictions = tf.transpose(predictions, [0, 2, 1]) # [batch, beam_width, length]
+            predictions = predictions = predictions[:, 0, :] # [batch, length]
+            return predictions
+
+
+        else: # Greedy decoder (Test & Eval)
             outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, impute_finished=True, maximum_iterations = self. max_iter)
-
-        self.logits = outputs.rnn_output
-
-       	return self.logits
+            return outputs.rnn_output
 
 
-    def set_attentional_cell(self, memory, memory_length, encoder_state, enc_num_layer):
+
+
+    def set_attention_cell(self, memory, memory_length, encoder_state, enc_num_layer):
         self.batch_size = tf.shape(memory)[0]
 
     	dec_cell = self._create_cell()
+            
+        if (self.mode == tf.estimator.ModeKeys.PREDICT and self.beam_width > 0):
+            memory = tf.contrib.seq2seq.tile_batch(memory, self.beam_width)
+            memory_length = tf.contrib.seq2seq.tile_batch(memory_length, self.beam_width)
+
 	attention_mechanism = self._attention(memory, memory_length)
 
 	initial_cell_state = encoder_state if self.num_layer == enc_num_layer else None
@@ -189,4 +222,4 @@ class Decoder(_BaseClass):
 	            memory_length,
                     scale = True)
 	else:
-	    raise ValueError('Unknown attention mechanism : %s' %attn_type)
+	    raise ValueError('Unknown attention mechanism : %s' %self.attn_type)

@@ -13,7 +13,6 @@ Implemenration of &lt;Learning to Ask: Neural Question Generation for Reading Co
     - GRU/LSTM
   
   - To be updated
-    - Beam decoder
     - Post-processing code for unknown words
     
 2. **Dataset**
@@ -51,7 +50,7 @@ python process_embedding.py # This will take a couple of minutes
 # epochs: training epochs
 
 bash run.sh train [data_name] [hyperparameters] [epochs]
-# example : bash run.sh trian squad basic_params 10
+# example : bash run.sh train squad basic_params 10
 ```
 
 4. Test model
