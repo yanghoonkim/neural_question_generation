@@ -109,7 +109,7 @@ class q_generation:
 	if mode == tf.estimator.ModeKeys.PREDICT:
             return 
 		
-	labels = tf.concat([self.dec_inputs[:, 1:], tf.zeros([self.batch_size, 1], dtype = tf.int32)], axis = 1, name = 'labels')
+	self.labels = tf.concat([self.dec_inputs[:, 1:], tf.zeros([self.batch_size, 1], dtype = tf.int32)], axis = 1, name = 'labels')
 	maxlen_label = self.maxlen_dec_train if mode == tf.estimator.ModeKeys.TRAIN else self.maxlen_dec_dev
 	current_length = tf.shape(self.logits)[1]
 
@@ -128,7 +128,7 @@ class q_generation:
 	weight_pad = tf.sequence_mask(self.dec_input_length, maxlen_label, self.dtype)
 	self.loss = tf.contrib.seq2seq.sequence_loss(
                 self.logits, 
-		labels,
+		self.labels,
 		weight_pad,
 		average_across_timesteps = True,
 		average_across_batch = True,
@@ -136,7 +136,9 @@ class q_generation:
                 )
 
     def _update_or_output(self, mode):
-        eval_metric_ops = None
+        eval_metric_ops = {
+                'bleu' : utils.bleu_score(self.labels, self.predictions)
+                }
 
         if mode == tf.estimator.ModeKeys.PREDICT:
 	    return tf.estimator.EstimatorSpec(
