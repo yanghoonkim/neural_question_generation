@@ -158,7 +158,7 @@ for sentence in all_sentence:
 sorted_wordlist = [(k, wordcount[k]) for k in sorted(wordcount, key=wordcount.get, reverse=True)]
 
 print 'resize dictionary with %d most frequent words...'%dic_size
-resized_dic = dict(sorted_wordlist[:dic_size])
+resized_dic = dict(sorted_wordlist[:(dic_size-4)])
 
 word2idx = dict()
 word2idx['<PAD>'] = 0
