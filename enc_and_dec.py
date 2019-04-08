@@ -177,14 +177,16 @@ class Decoder(_BaseClass):
         self.batch_size = tf.shape(memory)[0]
 
     	dec_cell = self._create_cell()
+        copy_state = encoder_state
             
         if (self.mode == tf.estimator.ModeKeys.PREDICT and self.beam_width > 0):
             memory = tf.contrib.seq2seq.tile_batch(memory, self.beam_width)
             memory_length = tf.contrib.seq2seq.tile_batch(memory_length, self.beam_width)
+            copy_state = tf.contrib.seq2seq.tile_batch(copy_state, self.beam_width)
 
 	attention_mechanism = self._attention(memory, memory_length)
 
-	initial_cell_state = encoder_state if self.num_layer == enc_num_layer else None
+	initial_cell_state = copy_state if self.num_layer == enc_num_layer else None
 	attn_dec_cell = tf.contrib.seq2seq.AttentionWrapper(
                 dec_cell, attention_mechanism,
 		attention_layer_size = self.hidden_size,

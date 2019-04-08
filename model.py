@@ -136,9 +136,6 @@ class q_generation:
                 )
 
     def _update_or_output(self, mode):
-        eval_metric_ops = {
-                'bleu' : utils.bleu_score(self.labels, self.predictions)
-                }
 
         if mode == tf.estimator.ModeKeys.PREDICT:
 	    return tf.estimator.EstimatorSpec(
@@ -146,6 +143,9 @@ class q_generation:
 		    predictions = {
 		    'question' : self.predictions
                     })
+        eval_metric_ops = {
+                'bleu' : utils.bleu_score(self.labels, self.predictions)
+                }
 
 	# Optimizer
         if self.decay_step is not None:
